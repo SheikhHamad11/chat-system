@@ -1,24 +1,32 @@
-import logo from './logo.svg';
-import './App.css';
+import './App.scss';
+import "bootstrap/dist/js/bootstrap.bundle";
+import Dashboard from './pages/admin/Dashboard';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import ManageClient from './pages/admin/ManageClient';
+import ClientForm from './pages/admin/ClientForm';
+import ManageAgent from './pages/admin/ManageAgent';
+import AgentForm from './pages/admin/AgentForm';
+import GroupsManagement from './pages/admin/GroupsManagement';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+    <BrowserRouter>
+    <Routes>
+      <Route path='/'>
+        {/* <Route path='' element={<ProtectedRoute><Home /></ProtectedRoute>} /> */}
+        {/* <Route path='register' element={<Register />} /> */}
+        <Route index element={<Dashboard/>} />
+        <Route path='/manageClient' element={<ManageClient/>} />
+        <Route path='/manageAgent' element={<ManageAgent/>} />
+        <Route path='/groupsmanagement' element={<GroupsManagement/>} />
+        <Route path='/agentForm' element={<AgentForm/>} />
+        <Route path='/clientForm' element={<ClientForm/>} />
+      </Route>
+    </Routes>
+  </BrowserRouter>
+  </>
+   
   );
 }
 
