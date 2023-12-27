@@ -1,5 +1,5 @@
 import axios from 'axios'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 const groups = [
@@ -20,6 +20,18 @@ export default function GroupComponent() {
         'groupName': '',
         'groupDescription': ''
     });
+    
+
+    useEffect(()=>{
+        axios.get('http://192.168.60.116:5000/api/group')
+        .then((result) => {
+            setaddedGroups(result.data)
+            console.log('res', result)
+        })
+        .catch((err) => {
+            console.log('err', err)
+        })
+    },[])
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -65,15 +77,15 @@ export default function GroupComponent() {
                         </thead>
                         <tbody>
                             {
-                                groups.filter(group => {
+                                addedgroups.filter(group => {
                                     return search.toLowerCase() === ''
                                         ? group
                                         : group.name.toLowerCase().includes(search)
                                 }).map((group, i) => {
                                     return <tr key={group.id}>
                                         <th scope="row">{i + 1}</th>
-                                        <td>{group.name}</td>
-                                        <td>{group.description}</td>
+                                        <td>{group.groupName}</td>
+                                        <td>{group.groupDescription}</td>
                     
                                         <td><Link to='/addGroup' data-bs-toggle="modal" data-bs-target="#staticBackdrop" className='btn btn-outline-warning'>Edit</Link></td>
                                     </tr>
