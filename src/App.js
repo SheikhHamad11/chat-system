@@ -21,6 +21,7 @@ function App() {
         <Route path='/manageAgent' element={<ManageAgent/>} />
         <Route path='/groupsmanagement' element={<GroupsManagement/>} />
         <Route path='/agentForm' element={<AgentForm/>} />
+        {/* <Route path='/clientForm/:Id' element={<ClientForm/>} /> */}
         <Route path='/clientForm' element={<ClientForm/>} />
       </Route>
     </Routes>

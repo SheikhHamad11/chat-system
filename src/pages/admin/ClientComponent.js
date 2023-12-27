@@ -1,11 +1,22 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { data } from '../../global/ClientData'
 import { Link } from 'react-router-dom'
-
+import axios from 'axios'
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const statuses = ["Active", "Deactivate", "Suspend"]
 export default function ClientComponent() {
     const [search, setSearch] = useState('')
+
+    useEffect(() => {
+        axios.get('https://jsonplaceholder.typicode.com/todos/1')
+            .then(res => {
+                console.log('res', res)
+            })
+            .catch(err => {
+                console.log('err', err)
+            })
+    }, [])
 
     const handleChange = (e) => {
         // setFormData(s => ({ ...s, [e.target.name]: e.target.value }))
@@ -13,13 +24,15 @@ export default function ClientComponent() {
     return (
         <div className="right">
 
-            <div className="container w-auto card shadow border-0 mt-3">
+            <div className="container w-auto card shadow border-0 my-3">
                 <h1 className='text-center'>Client Section</h1>
                 <div className="d-flex justify-content-between  p-3">
                     <input type="text" onChange={e => setSearch(e.target.value)} className='form-control w-auto ' placeholder='Search Here' />
                     <Link to='/clientForm' className='btn btn-outline-info '>Add New Client</Link>
                 </div>
+                
                 <div className='table-responsive'>
+               
                     <table className="table table-striped">
                         <thead>
                             <tr className='my-2'>
@@ -47,17 +60,17 @@ export default function ClientComponent() {
                                             <select className='form-select' name="" id="" onChange={handleChange}>
                                                 {
                                                     statuses.map(status => (
-                                                        <option  value={status} key={status}>{status}</option>
+                                                        <option value={status} key={status}>{status}</option>
                                                     ))
                                                 }
                                             </select>
 
                                         </td>
-                                        <td><Link to='/clientForm' className='btn btn-outline-warning'>Edit</Link></td>
+                                        <td><Link to={'/clientForm/'+item.Id} className='btn btn-outline-warning'>Edit</Link></td>
                                     </tr>
                                 })
                             }
-                           
+
                         </tbody>
                     </table>
                 </div>

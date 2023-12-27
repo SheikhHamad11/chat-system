@@ -35,7 +35,7 @@ export default function AgentComponent() {
                                         ? item
                                         : item.first_name.toLowerCase().includes(search)
                                 }).map((item, i) => {
-                                    return <tr key={item.Id}>
+                                    return <tr key={i}>
                                         <th scope="row">{i + 1}</th>
                                         <td>{item.first_name}</td>
                                         <td>{item.last_name}</td>

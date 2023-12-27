@@ -1,3 +1,4 @@
+import axios from 'axios'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -30,6 +31,14 @@ export default function GroupComponent() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        axios.post('http://192.168.60.116:5000/api/group', formData)
+            .then((res) => {
+                console.log('res', res)
+            })
+            .catch((err) => {
+                console.log('err', err)
+            })
+
         let newData = [...groups, { ...formData }]
         setaddedGroups(newData)
         console.log('Form submitted:', formData);
@@ -40,8 +49,8 @@ export default function GroupComponent() {
             <div className="container w-auto card shadow border-0 mt-3">
                 <h1 className='text-center'>Group Section</h1>
                 <div className="d-flex justify-content-between  p-3">
-                    <input type="text" onChange={e => setSearch(e.target.value)} className='form-control w-auto ' placeholder='Search Here' />
-                    <button to='/groupForm' className='btn btn-outline-info' data-bs-toggle="modal" data-bs-target="#staticBackdrop">Add New Group</button>
+                    <input type="text" onChange={e => setSearch(e.target.value)} className='form-control w-25' placeholder='Search Here' />
+                    <button to='/groupForm' className='btn btn-outline-info w-25' data-bs-toggle="modal" data-bs-target="#staticBackdrop">Add New Group</button>
                 </div>
                 <div className='table-responsive'>
                     <table className="table table-striped">
@@ -65,19 +74,8 @@ export default function GroupComponent() {
                                         <th scope="row">{i + 1}</th>
                                         <td>{group.name}</td>
                                         <td>{group.description}</td>
-                                        {/* <td>{group.Industry}</td>
-                                        <td>{group.Website_URL}</td> */}
-                                        {/* <td>
-                                            <select className='form-select' name="" id="" onChange={handleChange}>
-                                                {
-                                                    statuses.map(status => (
-                                                        <option  value={status} key={status}>{status}</option>
-                                                    ))
-                                                }
-                                            </select>
-
-                                        </td> */}
-                                        <td><Link to='/addGroup' className='btn btn-outline-warning'>Edit</Link></td>
+                    
+                                        <td><Link to='/addGroup' data-bs-toggle="modal" data-bs-target="#staticBackdrop" className='btn btn-outline-warning'>Edit</Link></td>
                                     </tr>
                                 })
                             }
@@ -88,15 +86,15 @@ export default function GroupComponent() {
 
             </div>
 
-            <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="staticBackdropLabel">Add Group Form</h1>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h1 className="modal-title fs-5" id="staticBackdropLabel">Add Group Form</h1>
+                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <form action="" onSubmit={handleSubmit}>
-                            <div class="modal-body">
+                            <div className="modal-body">
 
                                 <div className='col-12'>
                                     <label>Group Name:</label>
@@ -108,9 +106,9 @@ export default function GroupComponent() {
                                 </div>
 
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="submit"  class="btn btn-primary">Submit</button>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" className="btn btn-primary">Submit</button>
                             </div>
                         </form>
                     </div>

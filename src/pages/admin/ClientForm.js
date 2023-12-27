@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Sidebar from './Sidebar';
 import axios from 'axios';
+import { useParams } from 'react-router-dom';
 
 
 const initialState = {
@@ -38,12 +39,27 @@ const initialState = {
 }
 
 const companySizes = ['1-10', '11-20', '31-40', '41-50']
-export default function ClientForm() {
+ function  ClientForm(props) {
+  const [data,setData]=useState([])
   const [clients, setClients] = useState([])
   const [pemailError, setpEmailError] = useState('');
   const [semailError, setsEmailError] = useState('');
   const [loginemailError, setloginEmailError] = useState('');
   const [formData, setFormData] = useState(initialState);
+const {id}=useParams()
+  useEffect(() => {
+   axios.get('https://jsonplaceholder.typicode.com/users')
+ 
+  
+        .then(res => {
+            console.log('res', res)
+            setData(res.data)
+        })
+        .catch(err => {
+            console.log('err', err)
+        })
+}, [])
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -98,6 +114,7 @@ export default function ClientForm() {
     let newData = [...clients, { ...formData }]
     setClients(newData)
     console.log('Form submitted:', formData);
+
   };
 
   return (
@@ -109,7 +126,7 @@ export default function ClientForm() {
           <form onSubmit={handleSubmit} className='card shadow border-0 my-3'>
             <div className="row m-3">
               <h3>Basic Info:</h3>
-              <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Company Name:</label> <input required className='form-control' type="text" name="companyName" value={formData.companyName} onChange={handleInputChange} /></div>
+              <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Company Name:</label> <input required className='form-control' type="text" name="companyName" value={data.name} onChange={handleInputChange} /></div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Website URL:</label> <input required className='form-control' type="text" name="websiteUrl" value={formData.websiteUrl} onChange={handleInputChange} /></div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Subscription Package: </label> <input required className='form-control' type="number" name="subscriptionPackage" value={formData.subscriptionPackage} onChange={handleInputChange} /></div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Industry:</label> <input required className='form-control' type="text" name="industry" value={formData.industry} onChange={handleInputChange} /></div>
@@ -121,7 +138,7 @@ export default function ClientForm() {
                 </select>
                 {/* <input required className='form-control' type="number" min='1' max='50' name="companySize" value={formData.companySize} onChange={handleInputChange} /> */}
               </div>
-              <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Official Phone:</label> <input required className='form-control' type="tel" name="officialPhone" value={formData.officialPhone} onChange={handleInputChange} /></div>
+              <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Official Phone:</label> <input required className='form-control' type="tel" name="officialPhone" defaultValue={data.title} onChange={handleInputChange} /></div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Official Email:</label> <input required className='form-control' type="email" name="officialEmail" value={formData.officialEmail} onChange={handleInputChange} /></div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Official Fax:</label> <input required className='form-control' type="text" name="officialFax" value={formData.officialFax} onChange={handleInputChange} /></div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Address:</label> <input required className='form-control' type="text" name="address" value={formData.address} onChange={handleInputChange} /></div>
@@ -135,7 +152,7 @@ export default function ClientForm() {
               <h3>Group Info:</h3>
               <div className='col-12 col-md-6 col-lg-4 col-xxl-3'>
                 <label>Groups:</label>
-                <input required className='form-control' type="text" name="groupName" value={formData.groupName} onChange={handleInputChange} />
+                <input required className='form-control' id='1' type="text" name="groupName" value={formData.groupName} onChange={handleInputChange} />
               </div>
 
 
@@ -206,7 +223,7 @@ export default function ClientForm() {
               </div>
               <div className='col-12 col-md-6 col-lg-4 col-xxl-3'>
                 <label>Profile Picture:</label>
-                <input required className='form-control' type="file" name="profilePic" onChange={handleFileChange} accept="image/*" />
+                <input className='form-control' type="file" name="profilePic" onChange={handleFileChange} accept="image/*" />
               </div>
               <div className='text-center'>
                 <button className='btn btn-outline-primary w-50 mx-auto my-3' type="submit">Submit</button>
@@ -223,4 +240,5 @@ export default function ClientForm() {
   );
 };
 
+export default ( ClientForm)
 

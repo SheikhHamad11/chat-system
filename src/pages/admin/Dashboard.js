@@ -1,9 +1,9 @@
 import React from 'react'
-import ManageClient from './ManageClient'
-import ManageAgent from './ManageAgent'
+// import ManageClient from './ManageClient'
+// import ManageAgent from './ManageAgent'
 import Sidebar from './Sidebar'
-import ClientComponent from './ClientComponent'
-import AgentComponent from './AgentComponent'
+// import ClientComponent from './ClientComponent'
+// import AgentComponent from './AgentComponent'
 // import {Link} from 'react-router-dom'
 export default function Dashboard() {
     return (

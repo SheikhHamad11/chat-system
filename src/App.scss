@@ -1,39 +1,42 @@
 @import "~bootstrap/scss/bootstrap.scss";
 
-.left{
+* {
+  box-sizing: border-box;
+}
+
+.left {
   // overflow: auto;
   flex: 5%;
   position: relative;
   min-height: 100vh;
 }
 
-.right{
+.right {
   flex: 95%;
-  
+
 }
 
 
 @media screen and (max-width:400px) {
-  .left{
+  .left {
     // overflow: auto;
     flex: 25%;
-  
+
   }
 }
 
 @media screen and (min-width:401px) and (max-width:700px) {
-  .left{
+  .left {
     // overflow: auto;
     flex: 15%;
-  
+
   }
 }
 
 @media screen and (min-width:701px) and (max-width:1100px) {
-  .left{
+  .left {
     // overflow: auto;
     flex: 8%;
-  
+
   }
 }
-
