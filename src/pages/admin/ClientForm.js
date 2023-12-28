@@ -44,7 +44,10 @@ function ClientForm(props) {
   const [pemailError, setpEmailError] = useState("");
   const [semailError, setsEmailError] = useState("");
   const [loginemailError, setloginEmailError] = useState("");
-  const [UploadPercentage, setUploadPercentage] = useState(0);
+  const [UploadPercentage, setUploadPercentage] = useState({
+    logo: 0,
+    profilePic: 0,
+  });
   const [formData, setFormData] = useState(initialState);
   const { id } = useParams();
   // useEffect(() => {
@@ -86,6 +89,8 @@ function ClientForm(props) {
     const file = e.target.files[0];
     const imagedata = new FormData();
     imagedata.append("photo", e.target.files[0]);
+    if (formData[e.target.name])
+      imagedata.append("oldpicture", formData[e.target.name]);
     const url = `${process.env.REACT_APP_Sever_Api}/imageupload`;
     console.log(url);
     const options = {
@@ -102,7 +107,10 @@ function ClientForm(props) {
           const percentage = Math.round(
             (progressEvent.loaded * 100) / progressEvent.total
           );
-          setUploadPercentage(percentage);
+          setUploadPercentage((prev) => ({
+            ...prev,
+            [e.target.name]: percentage,
+          }));
         },
       })
       .then((res) => {
@@ -331,8 +339,9 @@ function ClientForm(props) {
                   name="logo"
                   onChange={handleFileChange}
                   accept="image/*"
+                  disabled={UploadPercentage.logo > 0 && UploadPercentage < 100}
                 />
-                {UploadPercentage > 0 && (
+                {UploadPercentage.logo > 0 && (
                   <div
                     className="progress mt-1"
                     role="progressbar"
@@ -343,12 +352,12 @@ function ClientForm(props) {
                   >
                     <div
                       className="progress-bar bg-success"
-                      style={{ width: `${UploadPercentage}%` }}
+                      style={{ width: `${UploadPercentage.logo}%` }}
                     >
                       {/* {console.log(UploadPercentage)} */}
-                      {UploadPercentage === 100
+                      {UploadPercentage.logo === 100
                         ? "Uploaded Successfully!!"
-                        : `${UploadPercentage}%`}
+                        : `${UploadPercentage.logo}%`}
                     </div>
                   </div>
                 )}
@@ -540,7 +549,28 @@ function ClientForm(props) {
                   name="profilePic"
                   onChange={handleFileChange}
                   accept="image/*"
+                  disabled={UploadPercentage.logo > 0 && UploadPercentage < 100}
                 />
+                {UploadPercentage.profilePic > 0 && (
+                  <div
+                    className="progress mt-1"
+                    role="progressbar"
+                    aria-label="Basic example"
+                    aria-valuenow={25}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                  >
+                    <div
+                      className="progress-bar bg-success"
+                      style={{ width: `${UploadPercentage.profilePic}%` }}
+                    >
+                      {/* {console.log(UploadPercentage)} */}
+                      {UploadPercentage.profilePic === 100
+                        ? "Uploaded Successfully!!"
+                        : `${UploadPercentage.profilePic}%`}
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="text-center">
                 <button
