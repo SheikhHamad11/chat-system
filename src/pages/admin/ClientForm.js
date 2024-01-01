@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Sidebar from './Sidebar';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-
+import { countries } from '../../global/Countries'
 
 const initialState = {
   companyName: '',
@@ -40,26 +40,26 @@ const initialState = {
 
 const companySizes = ['1-10', '11-20', '31-40', '41-50']
 function ClientForm(props) {
-  const [data, setData] = useState([])
+  console.warn('props', props)
+  // const [data, setData] = useState([])
   const [groups, setGroups] = useState([])
   const [clients, setClients] = useState([])
+  const [offemailError, setoffEmailError] = useState('');
   const [pemailError, setpEmailError] = useState('');
   const [semailError, setsEmailError] = useState('');
   const [loginemailError, setloginEmailError] = useState('');
   const [formData, setFormData] = useState(initialState);
-  const { id } = useParams()
-  useEffect(() => {
-    axios.get('https://jsonplaceholder.typicode.com/users')
-
-
-      .then(res => {
-        console.log('res', res)
-        setData(res.data)
-      })
-      .catch(err => {
-        console.log('err', err)
-      })
-  }, [])
+  // const { id } = useParams()
+  // useEffect(() => {
+  //   axios.get('https://jsonplaceholder.typicode.com/users')
+  //     .then(res => {
+  //       console.log('res', res)
+  //       setData(res.data)
+  //     })
+  //     .catch(err => {
+  //       console.log('err', err)
+  //     })
+  // }, [])
 
 
   const handleInputChange = (e) => {
@@ -70,6 +70,11 @@ function ClientForm(props) {
     }));
 
     // Email validation
+    if (name === 'officialEmail') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      setoffEmailError(emailRegex.test(value) ? '' : 'Invalid email address');
+    }
+
     if (name === 'primaryEmail') {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       setpEmailError(emailRegex.test(value) ? '' : 'Invalid email address');
@@ -98,14 +103,14 @@ function ClientForm(props) {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Check for email validation errors before submitting
-    if (pemailError || semailError || loginemailError) {
+    if (pemailError || semailError || loginemailError || offemailError) {
       console.log('Form submission failed. Please fix validation errors.');
       return;
     }
 
     axios.post('http://192.168.60.116:5000/api/client', formData)
       .then((res) => {
-        console.log('res', res)
+        console.log('ClientFormReq', res)
       })
       .catch((err) => {
         console.log('err', err)
@@ -120,12 +125,12 @@ function ClientForm(props) {
 
   useEffect(() => {
     axios.get('http://192.168.60.116:5000/api/group')
-      .then((result) => {
-        setGroups(result.data)
-        console.log('res', result)
+      .then((group) => {
+        setGroups(group.data)
+        console.log('groupData', group)
       })
       .catch((err) => {
-        console.log('err', err)
+        console.log('grouperr', err)
       })
   }, [])
 
@@ -138,26 +143,40 @@ function ClientForm(props) {
           <form onSubmit={handleSubmit} className='card shadow border-0 my-3'>
             <div className="row m-3">
               <h3>Basic Info:</h3>
-              <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Company Name:</label> <input required className='form-control' type="text" name="companyName" value={data.name} onChange={handleInputChange} /></div>
+              <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Company Name:</label> <input required className='form-control' type="text" name="companyName" value={formData.name} onChange={handleInputChange} /></div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Website URL:</label> <input required className='form-control' type="text" name="websiteUrl" value={formData.websiteUrl} onChange={handleInputChange} /></div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Subscription Package: </label> <input required className='form-control' type="number" name="subscriptionPackage" value={formData.subscriptionPackage} onChange={handleInputChange} /></div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Industry:</label> <input required className='form-control' type="text" name="industry" value={formData.industry} onChange={handleInputChange} /></div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Company Size:</label>
-                <select className='form-select' name="companySize" value={formData.companySize} onChange={handleInputChange} id="">
+                <select className='form-select' id='companySize' name="companySize" value={formData.companySize} onChange={handleInputChange} >
                   {companySizes.map(size => (
                     <option key={size} value={size}>{size}</option>
                   ))}
                 </select>
-                {/* <input required className='form-control' type="number" min='1' max='50' name="companySize" value={formData.companySize} onChange={handleInputChange} /> */}
               </div>
-              <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Official Phone:</label> <input required className='form-control' type="tel" name="officialPhone" defaultValue={data.title} onChange={handleInputChange} /></div>
-              <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Official Email:</label> <input required className='form-control' type="email" name="officialEmail" value={formData.officialEmail} onChange={handleInputChange} /></div>
+              <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Official Phone:</label> <input required className='form-control' type="tel" name="officialPhone" defaultValue={formData.title} onChange={handleInputChange} /></div>
+              <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
+                <label>Official Email:</label>
+                <input required className='form-control' type="email" name="officialEmail" value={formData.officialEmail} onChange={handleInputChange} />
+                {/* Email validation error message */}
+                {offemailError && <div style={{ color: 'red' }}>{offemailError}</div>}
+              </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Official Fax:</label> <input required className='form-control' type="text" name="officialFax" value={formData.officialFax} onChange={handleInputChange} /></div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Address:</label> <input required className='form-control' type="text" name="address" value={formData.address} onChange={handleInputChange} /></div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>City:</label> <input required className='form-control' type="text" name="city" value={formData.city} onChange={handleInputChange} /></div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>State/Region:</label> <input required className='form-control' type="text" name="stateRegion" value={formData.stateRegion} onChange={handleInputChange} /></div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Zip/Postal Code:</label> <input required className='form-control' type="number" name="zipPostalCode" value={formData.zipPostalCode} onChange={handleInputChange} /></div>
-              <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Country:</label> <input required className='form-control' type="text" name="country" value={formData.country} onChange={handleInputChange} /></div>
+              <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Country:</label>
+
+                <label>Country:</label>
+                <select name="country" id="country" className='form-select' value={formData.country} onChange={handleInputChange} >
+                  <option value="">-- Select Country --</option>
+                  {countries.map((country) => (
+                    <option value={country} key={country.code}>{country.name}</option>
+                  ))}
+                </select>
+                {/* <input required className='form-control' type="text" name="country" value={formData.country} onChange={handleInputChange} /> */}
+              </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Annual Revenue:</label> <input required className='form-control' type="number" name="annualRevenue" value={formData.annualRevenue} onChange={handleInputChange} /></div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Logo:</label> <input required className='form-control' type="file" name="logo" onChange={handleFileChange} accept="image/*" /></div>
 

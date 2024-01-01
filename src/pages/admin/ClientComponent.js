@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react'
-import { data } from '../../global/ClientData'
+// import { data } from '../../global/ClientData'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const statuses = ["Active", "Deactivate", "Suspend"]
 export default function ClientComponent() {
+    const [data,setData]=useState([])
     const [search, setSearch] = useState('')
 
     useEffect(() => {
-        axios.get('https://jsonplaceholder.typicode.com/todos/1')
+        axios.get('http://192.168.60.116:5000/api/client')
             .then(res => {
                 console.log('res', res)
+                setData(res.data)
             })
             .catch(err => {
                 console.log('err', err)
@@ -30,9 +32,9 @@ export default function ClientComponent() {
                     <input type="text" onChange={e => setSearch(e.target.value)} className='form-control w-auto ' placeholder='Search Here' />
                     <Link to='/clientForm' className='btn btn-outline-info '>Add New Client</Link>
                 </div>
-                
+
                 <div className='table-responsive'>
-               
+
                     <table className="table table-striped">
                         <thead>
                             <tr className='my-2'>
@@ -49,13 +51,13 @@ export default function ClientComponent() {
                                 data.filter(item => {
                                     return search.toLowerCase() === ''
                                         ? item
-                                        : item.company_Name.toLowerCase().includes(search)
+                                        : item.companyName.toLowerCase().includes(search)
                                 }).map((item, i) => {
-                                    return <tr key={item.Id}>
+                                    return <tr key={item._id}>
                                         <th scope="row">{i + 1}</th>
-                                        <td>{item.company_Name}</td>
-                                        <td>{item.Industry}</td>
-                                        <td>{item.Website_URL}</td>
+                                        <td>{item.companyName}</td>
+                                        <td>{item.industry}</td>
+                                        <td>{item.websiteURL}</td>
                                         <td>
                                             <select className='form-select' name="" id="" onChange={handleChange}>
                                                 {
@@ -66,7 +68,7 @@ export default function ClientComponent() {
                                             </select>
 
                                         </td>
-                                        <td><Link to={'/clientForm/'+item.Id} className='btn btn-outline-warning'>Edit</Link></td>
+                                        <td><Link to={'/clientForm/' + item.Id} className='btn btn-outline-warning'>Edit</Link></td>
                                     </tr>
                                 })
                             }
