@@ -1,14 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Sidebar from "./Sidebar";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
-
+import {
+  blurfuction,
+  remove_border_color,
+  submitvalidation,
+} from "../../global/formvalidation";
+import { MdClose } from "react-icons/md";
+const companySizes = ["1-20", "21-50", "50-100", "Above 100"];
 const initialState = {
   companyName: "",
   websiteUrl: "",
-  subscriptionPackage: "",
+  subscriptionPackage: "0",
   industry: "",
-  companySize: "",
+  companySize: companySizes[0],
   officialPhone: "",
   officialEmail: "",
   officialFax: "",
@@ -18,7 +25,7 @@ const initialState = {
   zipPostalCode: "",
   country: "",
   annualRevenue: "",
-  logo: null,
+  logo: "",
   groupName: "",
   primaryEmail: "",
   primaryfirstName: "",
@@ -33,34 +40,22 @@ const initialState = {
   loginemail: "",
   password: "",
   language: "",
-  profilePic: null,
+  profilePic: "",
+  CPassword: "",
 };
 
-const companySizes = ["1-10", "11-20", "31-40", "41-50"];
-function ClientForm(props) {
-  const [data, setData] = useState([]);
+function ClientForm() {
   const [groups, setGroups] = useState([]);
-  const [clients, setClients] = useState([]);
-  const [pemailError, setpEmailError] = useState("");
-  const [semailError, setsEmailError] = useState("");
-  const [loginemailError, setloginEmailError] = useState("");
+  const [error, seterror] = useState({});
   const [UploadPercentage, setUploadPercentage] = useState({
     logo: 0,
     profilePic: 0,
   });
+  const inputRefs = useRef({});
+
   const [formData, setFormData] = useState(initialState);
   const { id } = useParams();
-  // useEffect(() => {
-  //   axios.get('https://jsonplaceholder.typicode.com/users')
-
-  //     .then(res => {
-  //       console.log('res', res)
-  //       setData(res.data)
-  //     })
-  //     .catch(err => {
-  //       console.log('err', err)
-  //     })
-  // }, [])
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -70,34 +65,28 @@ function ClientForm(props) {
       [name]: value,
     }));
 
-    // Email validation
-    if (name === "primaryEmail") {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      setpEmailError(emailRegex.test(value) ? "" : "Invalid email address");
-    }
-    if (name === "secemail") {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      setsEmailError(emailRegex.test(value) ? "" : "Invalid email address");
-    }
-    if (name === "loginemail") {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      setloginEmailError(emailRegex.test(value) ? "" : "Invalid email address");
-    }
+    // // Email validation
+    // if (name === "primaryEmail") {
+    //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    //   seterror(emailRegex.test(value) ? "" : "Invalid email address");
+    // }
+    // if (name === "secemail") {
+    //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    //   setsEmailError(emailRegex.test(value) ? "" : "Invalid email address");
+    // }
+    // if (name === "loginemail") {
+    //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    //   setloginEmailError(emailRegex.test(value) ? "" : "Invalid email address");
+    // }
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
     const imagedata = new FormData();
     imagedata.append("photo", e.target.files[0]);
-    if (formData[e.target.name])
+    if (formData[e.target.name]) {
       imagedata.append("oldpicture", formData[e.target.name]);
+    }
     const url = `${process.env.REACT_APP_Sever_Api}/imageupload`;
-    console.log(url);
-    const options = {
-      method: "POST",
-      body: formData,
-    };
-    // fetch(url, options);
     axios
       .post(url, imagedata, {
         headers: {
@@ -114,87 +103,183 @@ function ClientForm(props) {
         },
       })
       .then((res) => {
-        console.log("res", res.data.path);
+        // console.log("res", res.data.path);
+        seterror((prev) => ({ ...prev, [e.target.name]: "" }));
+        if (e.target.classList.contains("border-danger")) {
+          e.target.classList.remove("border-danger");
+        }
+        e.target.classList.add("border-success");
+
         setFormData((prevData) => ({
           ...prevData,
           [e.target.name]: res.data.path,
-          // profilePic: file
         }));
       })
       .catch((err) => {
         console.log("err", err);
       });
   };
+  const onblurvalidation = (e, msg) => {
+    blurfuction(e, msg, seterror, formData);
+  };
+  const SubmitValidation = async () => {
+    const keys = Object.keys(inputRefs.current);
+    let isValid = true; // Assume all validations pass initially
+    let scroll = true;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Check for email validation errors before submitting
-    if (pemailError || semailError || loginemailError) {
-      console.log("Form submission failed. Please fix validation errors.");
-      return;
+    for (const item of keys) {
+      console.log(
+        item,
+        ":",
+        await submitvalidation(inputRefs.current[item], seterror, formData)
+      );
+
+      if (
+        !(await submitvalidation(inputRefs.current[item], seterror, formData))
+      ) {
+        console.log("false:", inputRefs.current[item].name);
+        isValid = false;
+
+        if (scroll) {
+          scroll = false;
+          inputRefs.current[item].scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }
+
+        // No need to continue checking other fields if one fails
+      }
     }
 
-    axios
-      .post("http://192.168.60.116:5000/api/client", formData)
-      .then((res) => {
-        console.log("res", res);
-      })
-      .catch((err) => {
-        console.log("err", err);
-      });
+    return isValid; // Return the overall validation result
+  };
 
-    // Send formData to server or perform other actions
-    let newData = [...clients, { ...formData }];
-    setClients(newData);
-    console.log("Form submitted:", formData);
+  const remove_border = () => {
+    const keys = Object.keys(inputRefs.current);
+
+    keys.forEach((item) => {
+      remove_border_color(inputRefs.current[item]);
+    });
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Check for email validation errors before submitting
+    // if (pemailError || semailError || loginemailError) {
+    //   console.log("Form submission failed. Please fix validation errors.");
+    //   return;
+    // }
+    if (await SubmitValidation()) {
+      axios
+        .post(`${process.env.REACT_APP_Sever_Api}/client`, formData)
+        .then((res) => {
+          console.log("res", res);
+
+          remove_border();
+          setFormData(initialState);
+          setUploadPercentage({
+            logo: 0,
+            profilePic: 0,
+          });
+          seterror((prev) => ({ ...prev, general: undefined }));
+          navigate("/manageClient");
+        })
+        .catch((err) => {
+          console.log("err", err);
+          window.scrollTo(0, 0);
+          seterror((prev) => ({ ...prev, general: err.response.data.message }));
+        });
+    }
   };
 
   useEffect(() => {
     axios
-      .get("http://192.168.60.116:5000/api/group")
+      .get(`${process.env.REACT_APP_Sever_Api}/group`)
       .then((result) => {
         setGroups(result.data);
-        console.log("res", result);
+        setFormData((prev) => ({ ...prev, GroupId: result.data[0]._id }));
+        // console.log("res", result);
       })
       .catch((err) => {
         console.log("err", err);
       });
   }, []);
-
+  const setInputRef = (name, ref) => {
+    // console.log(name);
+    inputRefs.current[name] = ref;
+  };
   return (
     <div className="d-flex">
       <Sidebar />
       <div className="right">
         <div className="container">
           <h1 className="text-center mt-2">Client Form</h1>
-          <form onSubmit={handleSubmit} className="card shadow border-0 my-3">
+          <form
+            onSubmit={handleSubmit}
+            className="card shadow border-0 my-3"
+            noValidate
+          >
             <div className="row m-3">
               <h3>Basic Info:</h3>
+              {error.general && (
+                <h5 className="bg-danger text-center pb-2 rounded text-white d-flex flex-column">
+                  <span
+                    className="align-self-end"
+                    style={{ cursor: "pointer" }}
+                    onClick={() =>
+                      seterror((prev) => ({ ...prev, general: undefined }))
+                    }
+                  >
+                    <MdClose />
+                  </span>
+
+                  {error.general}
+                </h5>
+              )}
+
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Company Name:</label>{" "}
+                <label>
+                  Company Name <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
-                  required
+                  ref={(ref) => setInputRef("companyName", ref)}
                   className="form-control"
                   type="text"
                   name="companyName"
-                  value={data.name}
+                  value={formData.name}
                   onChange={handleInputChange}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
+                  //  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
+                  required
                 />
+                <div className="form-text text-danger">{error.companyName}</div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Website URL:</label>{" "}
+                <label>
+                  Website URL <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
-                  required
+                  ref={(ref) => setInputRef("websiteUrl", ref)}
                   className="form-control"
                   type="text"
                   name="websiteUrl"
                   value={formData.websiteUrl}
                   onChange={handleInputChange}
+                  onBlur={(e) =>
+                    onblurvalidation(
+                      e,
+                      "The website address you entered isn't quite right. Make sure it starts with 'http://' or 'https://' and has a valid website name."
+                    )
+                  }
+                  title="The website address you entered isn't quite right. Make sure it starts with 'http://' or 'https://' and has a valid website name."
+                  required
                 />
+                <div className="form-text text-danger">{error.websiteUrl}</div>
               </div>
-              <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Subscription Package: </label>{" "}
-                <input
+              {/* <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
+                <label>Subscription Package: <span className="text-danger fw-bold">*</span></label>
+                <input ref={(ref) => setInputRef('subscriptionPackage', ref)}
                   required
                   className="form-control"
                   type="number"
@@ -202,10 +287,14 @@ function ClientForm(props) {
                   value={formData.subscriptionPackage}
                   onChange={handleInputChange}
                 />
-              </div>
+              </div> */}
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Industry:</label>{" "}
+                <label>
+                  Industry <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("industry", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="text"
@@ -213,15 +302,21 @@ function ClientForm(props) {
                   value={formData.industry}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">{error.industry}</div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Company Size:</label>
+                <label>
+                  Company Size <span className="text-danger fw-bold">*</span>
+                </label>
                 <select
+                  ref={(ref) => setInputRef("companySize", ref)}
                   className="form-select"
                   name="companySize"
                   value={formData.companySize}
                   onChange={handleInputChange}
                   id=""
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
+                  required
                 >
                   {companySizes.map((size) => (
                     <option key={size} value={size}>
@@ -229,33 +324,58 @@ function ClientForm(props) {
                     </option>
                   ))}
                 </select>
-                {/* <input required className='form-control' type="number" min='1' max='50' name="companySize" value={formData.companySize} onChange={handleInputChange} /> */}
+                <div className="form-text text-danger">{error.companySize}</div>
+                {/* <input ref={(ref) => setInputRef('fieldName1', ref)}onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
+
+                 required className='form-control' type="number" min='1' max='50' name="companySize" value={formData.companySize} onChange={handleInputChange} /> */}
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Official Phone:</label>{" "}
+                <label>
+                  Official Phone <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("officialPhone", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="tel"
                   name="officialPhone"
-                  defaultValue={data.title}
+                  value={formData.officialPhone}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">
+                  {error.officialPhone}
+                </div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Official Email:</label>{" "}
+                <label>
+                  Official Email <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  title="Please Enter a Valid Email Address."
                   required
                   className="form-control"
                   type="email"
                   name="officialEmail"
                   value={formData.officialEmail}
                   onChange={handleInputChange}
+                  ref={(ref) => setInputRef("officialEmail", ref)}
+                  pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+                  onBlur={(e) =>
+                    onblurvalidation(e, "Please Enter a Valid Email Address.")
+                  }
                 />
+                <div className="form-text text-danger">
+                  {error.officialEmail}
+                </div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Official Fax:</label>{" "}
+                <label>
+                  Official Fax <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("officialFax", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="text"
@@ -263,10 +383,15 @@ function ClientForm(props) {
                   value={formData.officialFax}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">{error.officialFax}</div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Address:</label>{" "}
+                <label>
+                  Address <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("address", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="text"
@@ -274,10 +399,15 @@ function ClientForm(props) {
                   value={formData.address}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">{error.address}</div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>City:</label>{" "}
+                <label>
+                  City <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("city", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="text"
@@ -285,10 +415,15 @@ function ClientForm(props) {
                   value={formData.city}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">{error.city}</div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>State/Region:</label>{" "}
+                <label>
+                  State/Region <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("stateRegion", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="text"
@@ -296,10 +431,15 @@ function ClientForm(props) {
                   value={formData.stateRegion}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">{error.stateRegion}</div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Zip/Postal Code:</label>{" "}
+                <label>
+                  Zip/Postal Code <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("zipPostalCode", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="number"
@@ -307,10 +447,17 @@ function ClientForm(props) {
                   value={formData.zipPostalCode}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">
+                  {error.zipPostalCode}
+                </div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Country:</label>{" "}
+                <label>
+                  Country <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("country", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="text"
@@ -318,10 +465,15 @@ function ClientForm(props) {
                   value={formData.country}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">{error.country}</div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Annual Revenue:</label>{" "}
+                <label>
+                  Annual Revenue <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("annualRevenue", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="number"
@@ -329,10 +481,18 @@ function ClientForm(props) {
                   value={formData.annualRevenue}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">
+                  {error.annualRevenue}
+                </div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Logo:</label>{" "}
+                <label>
+                  Logo <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("logo", ref)}
+                  onBlur={(e) => onblurvalidation(e, "Please choose a logo!")}
+                  title="Please choose a logo!"
                   required
                   className="form-control"
                   type="file"
@@ -341,6 +501,7 @@ function ClientForm(props) {
                   accept="image/*"
                   disabled={UploadPercentage.logo > 0 && UploadPercentage < 100}
                 />
+                <div className="form-text text-danger">{error.logo}</div>
                 {UploadPercentage.logo > 0 && (
                   <div
                     className="progress mt-1"
@@ -365,8 +526,11 @@ function ClientForm(props) {
 
               <h3>Group Info:</h3>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Groups:</label>
+                <label>
+                  Groups <span className="text-danger fw-bold">*</span>
+                </label>
                 <select
+                  ref={(ref) => setInputRef("GroupId", ref)}
                   name="GroupId"
                   id=""
                   className="form-select"
@@ -378,13 +542,20 @@ function ClientForm(props) {
                     </option>
                   ))}
                 </select>
-                {/* <input required className='form-control' id='1' type="text" name="groupName" value={formData.groupName} onChange={handleInputChange} /> */}
+                <div className="form-text text-danger">{error.GroupId}</div>
+                {/* <input ref={(ref) => setInputRef('fieldName1', ref)}onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
+
+                 required className='form-control' id='1' type="text" name="groupName" value={formData.groupName} onChange={handleInputChange} /> */}
               </div>
 
               <h3>Primary Contact Info:</h3>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>First Name:</label>
+                <label>
+                  First Name <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("primaryfirstName", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="text"
@@ -392,10 +563,17 @@ function ClientForm(props) {
                   value={formData.primaryfirstName}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">
+                  {error.primaryfirstName}
+                </div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Last Name:</label>
+                <label>
+                  Last Name <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("primarylastName", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="text"
@@ -403,10 +581,21 @@ function ClientForm(props) {
                   value={formData.primarylastName}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">
+                  {error.primarylastName}
+                </div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Email:</label>
+                <label>
+                  Email <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("primaryEmail", ref)}
+                  pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+                  onBlur={(e) =>
+                    onblurvalidation(e, "Please Enter a Valid Email Address.")
+                  }
+                  title="Please Enter a Valid Email Address."
                   required
                   className="form-control"
                   type="email"
@@ -414,14 +603,21 @@ function ClientForm(props) {
                   value={formData.primaryEmail}
                   onChange={handleInputChange}
                 />
-                {/* Email validation error message */}
+                <div className="form-text text-danger">
+                  {error.primaryEmail}
+                </div>
+                {/* Email validation error message
                 {pemailError && (
                   <div style={{ color: "red" }}>{pemailError}</div>
-                )}
+                )} */}
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Job Role:</label>
+                <label>
+                  Job Role <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("primaryjobRole", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="text"
@@ -429,10 +625,17 @@ function ClientForm(props) {
                   value={formData.primaryjobRole}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">
+                  {error.primaryjobRole}
+                </div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Phone:</label>
+                <label>
+                  Phone <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("primaryphone", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="tel"
@@ -440,13 +643,16 @@ function ClientForm(props) {
                   value={formData.primaryphone}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">
+                  {error.primaryphone}
+                </div>
               </div>
 
               <h3>Secondary Contact Info:</h3>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>First Name:</label>
+                <label>First Name </label>
                 <input
-                  required
+                  ref={(ref) => setInputRef("secfirstName", ref)}
                   className="form-control"
                   type="text"
                   name="secfirstName"
@@ -455,9 +661,9 @@ function ClientForm(props) {
                 />
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Last Name:</label>
+                <label>Last Name </label>
                 <input
-                  required
+                  ref={(ref) => setInputRef("seclastName", ref)}
                   className="form-control"
                   type="text"
                   name="seclastName"
@@ -466,24 +672,30 @@ function ClientForm(props) {
                 />
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Email:</label>
+                <label>Email </label>
                 <input
-                  required
+                  ref={(ref) => setInputRef("secemail", ref)}
                   className="form-control"
                   type="email"
                   name="secemail"
                   value={formData.secemail}
                   onChange={handleInputChange}
+                  pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+                  onBlur={(e) =>
+                    onblurvalidation(e, "Please Enter a Valid Email Address.")
+                  }
+                  title="Please Enter a Valid Email Address."
                 />
+                <div className="form-text text-danger">{error.secemail}</div>
                 {/* Email validation error message */}
-                {semailError && (
+                {/* {semailError && (
                   <div style={{ color: "red" }}>{semailError}</div>
-                )}
+                )} */}
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Job Role:</label>
+                <label>Job Role </label>
                 <input
-                  required
+                  ref={(ref) => setInputRef("secjobRole", ref)}
                   className="form-control"
                   type="text"
                   name="secjobRole"
@@ -492,9 +704,9 @@ function ClientForm(props) {
                 />
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Phone:</label>
+                <label>Phone </label>
                 <input
-                  required
+                  ref={(ref) => setInputRef("secphone", ref)}
                   className="form-control"
                   type="tel"
                   name="secphone"
@@ -505,34 +717,82 @@ function ClientForm(props) {
 
               <h3>Login Info:</h3>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Email:</label>
+                <label>
+                  Email <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
-                  required
+                  // ref={(ref) => setInputRef("loginemail", ref)}
+                  // onBlur={(e) =>
+                  //   onblurvalidation(e, "Please Enter a Valid Email Address.")
+                  // }
+                  // required
                   className="form-control"
                   type="email"
-                  name="loginemail"
-                  value={formData.loginemail}
-                  onChange={handleInputChange}
+                  // name="loginemail"
+                  value={formData.officialEmail}
+                  // onChange={handleInputChange}
+                  disabled
                 />
+                <div className="form-text text-danger">{error.loginemail}</div>
                 {/* Email validation error message */}
-                {loginemailError && (
+                {/* {loginemailError && (
                   <div style={{ color: "red" }}>{loginemailError}</div>
-                )}
+                )} */}
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Password:</label>
+                <label>
+                  Password <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("password", ref)}
                   required
                   className="form-control"
                   type="password"
                   name="password"
                   value={formData.password}
+                  pattern="^(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&+=!_])[A-Za-z\d@#$%^&+=!_]{8,}$"
                   onChange={handleInputChange}
+                  onBlur={(e) =>
+                    onblurvalidation(
+                      e,
+                      "Password must be at least 8 characters long and include at least one uppercase letter, one digit, and one special character (!@#$%^&*()-_+=)."
+                    )
+                  }
+                  title="Password must be at least 8 characters long and include at least one uppercase letter, one digit, and one special character (!@#$%^&*()-_+=)."
                 />
+                <div className="form-text text-danger">{error.password}</div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Language:</label>
+                <label>
+                  Confirm Password
+                  <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("CPassword", ref)}
+                  onBlur={(e) =>
+                    onblurvalidation(
+                      e,
+                      "Password must be at least 8 characters long and include at least one uppercase letter, one digit, and one special character (!@#$%^&*()-_+=)."
+                    )
+                  }
+                  title="Password must be at least 8 characters long and include at least one uppercase letter, one digit, and one special character (!@#$%^&*()-_+=)."
+                  required
+                  className="form-control"
+                  type="password"
+                  name="CPassword"
+                  value={formData.CPassword}
+                  pattern="^(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&+=!_])[A-Za-z\d@#$%^&+=!_]{8,}$"
+                  onChange={handleInputChange}
+                />
+                <div className="form-text text-danger">{error.CPassword}</div>
+              </div>
+              <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
+                <label>
+                  Language <span className="text-danger fw-bold">*</span>
+                </label>
+                <input
+                  ref={(ref) => setInputRef("language", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="text"
@@ -540,17 +800,27 @@ function ClientForm(props) {
                   value={formData.language}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">{error.language}</div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Profile Picture:</label>
+                <label>
+                  Profile Picture <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("profilePic", ref)}
                   className="form-control"
                   type="file"
                   name="profilePic"
                   onChange={handleFileChange}
                   accept="image/*"
                   disabled={UploadPercentage.logo > 0 && UploadPercentage < 100}
+                  required
+                  onBlur={(e) =>
+                    onblurvalidation(e, "Please select a profile picture.")
+                  }
+                  title="Please select a profile picture."
                 />
+                <div className="form-text text-danger">{error.profilePic}</div>
                 {UploadPercentage.profilePic > 0 && (
                   <div
                     className="progress mt-1"
@@ -585,7 +855,6 @@ function ClientForm(props) {
         </div>
       </div>
       <div></div>
-      {/* <ManageClient clients={clients}/> */}
     </div>
   );
 }
