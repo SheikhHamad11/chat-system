@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
-
+import {countries} from '../../global/Countries'
 const designation = ['agent', 'sepervisor', 'manager']
 const AgentForm = () => {
     const [emailError, setEmailError] = useState('');
@@ -107,7 +107,15 @@ const AgentForm = () => {
                                 <label>Zip/Postal Code:</label> <input required className='form-control' type="text" name="zipPostalCode" value={formData.zipPostalCode} onChange={handleInputChange} />
                             </div>
                             <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                                <label>Country:</label> <input required className='form-control' type="text" name="country" value={formData.country} onChange={handleInputChange} />
+                                <label>Country:</label> 
+                                <select name="country" id="" className='form-select' value={formData.country} onChange={handleInputChange} >
+                                    <option value="">-- Select Country --</option>
+                                    {countries.map((country)=>(
+                                        <option value={country} key={country.code}>{country.name}</option>
+                                    ))}
+                                    
+                                </select>
+                                {/* <input required className='form-control' type="text" name="country" value={formData.country} onChange={handleInputChange} /> */}
                             </div>
 
                             <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
@@ -127,7 +135,7 @@ const AgentForm = () => {
 
                             <div className='col-12 col-md-6 col-lg-4 col-xxl-3'>
                                 <label>Password:</label>
-                                <input required className='form-control' type="tel" name="password" value={formData.password} onChange={handleInputChange} />
+                                <input required className='form-control' type="password" name="password" value={formData.password} onChange={handleInputChange} />
                             </div>
                             <div className='col-12 col-md-6 col-lg-4 col-xxl-3'>
                                 <label>Profile Picture:</label>

@@ -1,6 +1,6 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 
 const groups = [
     {
@@ -46,6 +46,7 @@ export default function GroupComponent() {
         axios.post('http://192.168.60.116:5000/api/group', formData)
             .then((res) => {
                 console.log('res', res)
+                Navigate('/groupManagement')
             })
             .catch((err) => {
                 console.log('err', err)
@@ -80,9 +81,9 @@ export default function GroupComponent() {
                                 addedgroups.filter(group => {
                                     return search.toLowerCase() === ''
                                         ? group
-                                        : group.name.toLowerCase().includes(search)
+                                        : group.groupName.toLowerCase().includes(search)
                                 }).map((group, i) => {
-                                    return <tr key={group.id}>
+                                    return <tr key={group._id}>
                                         <th scope="row">{i + 1}</th>
                                         <td>{group.groupName}</td>
                                         <td>{group.groupDescription}</td>

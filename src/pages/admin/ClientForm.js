@@ -3,6 +3,7 @@ import Sidebar from "./Sidebar";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import { countries } from '../../global/Countries'
 import {
   blurfuction,
   remove_border_color,
@@ -44,7 +45,8 @@ const initialState = {
   CPassword: "",
 };
 
-function ClientForm() {
+function ClientForm(props) {
+  console.warn('props', props)
   const [groups, setGroups] = useState([]);
   const [error, seterror] = useState({});
   const [UploadPercentage, setUploadPercentage] = useState({
@@ -56,6 +58,7 @@ function ClientForm() {
   const [formData, setFormData] = useState(initialState);
   const { id } = useParams();
   const navigate = useNavigate();
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -128,11 +131,6 @@ function ClientForm() {
     let scroll = true;
 
     for (const item of keys) {
-      console.log(
-        item,
-        ":",
-        await submitvalidation(inputRefs.current[item], seterror, formData)
-      );
 
       if (
         !(await submitvalidation(inputRefs.current[item], seterror, formData))
@@ -247,7 +245,7 @@ function ClientForm() {
                   className="form-control"
                   type="text"
                   name="companyName"
-                  value={formData.name}
+                  value={formData.companyName}
                   onChange={handleInputChange}
                   onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   //  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
@@ -451,21 +449,20 @@ function ClientForm() {
                   {error.zipPostalCode}
                 </div>
               </div>
-              <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
+              <div className="col-12 col-md-6 col-lg-4 col-xxl-3"><label>Country:</label>
+
                 <label>
                   Country <span className="text-danger fw-bold">*</span>
                 </label>
-                <input
-                  ref={(ref) => setInputRef("country", ref)}
-                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
-                  required
-                  className="form-control"
-                  type="text"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleInputChange}
-                />
+                <select  ref={(ref) => setInputRef("country", ref)} name="country" id="country" className='form-select' value={formData.country} onChange={handleInputChange} onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
+                  required >
+                  <option value="">-- Select Country --</option>
+                  {countries.map((country) => (
+                    <option value={country.name} key={country.code}>{country.name}</option>
+                  ))}
+                </select>
                 <div className="form-text text-danger">{error.country}</div>
+                {/* <input required className='form-control' type="text" name="country" value={formData.country} onChange={handleInputChange} /> */}
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
                 <label>
