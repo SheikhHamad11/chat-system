@@ -33,9 +33,9 @@ export default function ClientComponent() {
                     <Link to='/clientForm' className='btn btn-outline-info '>Add New Client</Link>
                 </div>
 
-                <div className='table-responsive'>
+                <div className='table-responsive' >
 
-                    <table className="table table-striped">
+                    <table className="table table-striped" >
                         <thead>
                             <tr className='my-2'>
                                 <th scope="col">#</th>

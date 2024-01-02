@@ -10,19 +10,19 @@ export default function Sidebar() {
     return (
         <div className="left d-flex flex-column bg-light">
             <div className='logo m-3'>
-                <Link to='/'><img src={svg} className='w-100 '  alt="" /></Link>
+                <Link to='/'><img src={svg} className='imgsidebar'  alt="" /></Link>
             </div>
 
             <div className='client-img m-3'>
-                <Link to='/manageClient'><img src={client} className='w-100' alt="" /></Link>
+                <Link to='/manageClient'><img src={client} className='imgsidebar' alt="" /></Link>
             </div>
 
             <div className='agent-img m-3'>
-                <Link to='/manageAgent'><img src={agent} className='w-100' alt="" /></Link>
+                <Link to='/manageAgent'><img src={agent} className='imgsidebar' alt="" /></Link>
             </div>
 
             <div className='group-img m-3'>
-                <Link to='/groupsmanagement'><img src={group} className='w-100 ' alt="" /></Link>
+                <Link to='/groupsmanagement'><img src={group} className='imgsidebar' alt="" /></Link>
             </div>
         </div>
     )

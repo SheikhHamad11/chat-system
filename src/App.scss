@@ -6,37 +6,42 @@
 
 .left {
   // overflow: auto;
-  flex: 5%;
+  min-width: 60px;
+  // flex: 5%;
   position: relative;
   min-height: 100vh;
 }
 
 .right {
   flex: 95%;
+}
 
+.imgsidebar{
+  max-width: 30px;
 }
 
 
-@media screen and (max-width:400px) {
-  .left {
-    // overflow: auto;
-    flex: 25%;
 
-  }
-}
+// @media screen and (max-width:400px) {
+//   .left {
+//     // overflow: auto;
+//     flex: 25%;
 
-@media screen and (min-width:401px) and (max-width:700px) {
-  .left {
-    // overflow: auto;
-    flex: 15%;
+//   }
+// }
 
-  }
-}
+// @media screen and (min-width:401px) and (max-width:700px) {
+//   .left {
+//     // overflow: auto;
+//     flex: 15%;
 
-@media screen and (min-width:701px) and (max-width:1100px) {
-  .left {
-    // overflow: auto;
-    flex: 8%;
+//   }
+// }
 
-  }
-}
+// @media screen and (min-width:701px) and (max-width:1100px) {
+//   .left {
+//     // overflow: auto;
+//     flex: 8%;
+
+//   }
+// }
