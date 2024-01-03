@@ -45,8 +45,7 @@ const initialState = {
   CPassword: "",
 };
 
-function ClientForm(props) {
-  console.warn("props", props);
+function ClientForm() {
   const [groups, setGroups] = useState([]);
   const [error, seterror] = useState({});
   const [UploadPercentage, setUploadPercentage] = useState({
@@ -56,7 +55,8 @@ function ClientForm(props) {
   const inputRefs = useRef({});
 
   const [formData, setFormData] = useState(initialState);
-  const { id } = useParams();
+  const { Id } = useParams();
+  // console.log(Id);
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
@@ -81,6 +81,23 @@ function ClientForm(props) {
     //   setloginEmailError(emailRegex.test(value) ? "" : "Invalid email address");
     // }
   };
+  const fetchClient = async (_id) => {
+    try {
+      const result = await axios.get(
+        `${process.env.REACT_APP_Sever_Api}/client/${_id}`
+      );
+      // console.log(result.data);
+      setFormData(result.data);
+    } catch (e) {
+      console.error(e);
+    }
+    // const result;
+  };
+  useEffect(() => {
+    if (Id) {
+      fetchClient(Id);
+    }
+  }, [Id]);
 
   const handleFileChange = (e) => {
     const imagedata = new FormData();
