@@ -11,8 +11,7 @@ export default function Dashboard() {
             <Sidebar />
             <div className="right">
                 <h1 className='text-center my-2'>Admin Dashboard</h1>
-                {/* <ClientComponent/> */}
-                {/* <AgentComponent/> */}
+               
             </div>
         </div>
     )

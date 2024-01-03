@@ -27,7 +27,7 @@ const initialState = {
   country: "",
   annualRevenue: "",
   logo: "",
-  groupName: "",
+  groupId: "",
   primaryEmail: "",
   primaryfirstName: "",
   primarylastName: "",
@@ -52,16 +52,15 @@ function ClientForm() {
     logo: 0,
     profilePic: 0,
   });
-  const inputRefs = useRef({});
-
   const [formData, setFormData] = useState(initialState);
   const { Id } = useParams();
   // console.log(Id);
+  const inputRefs = useRef({});
   const navigate = useNavigate();
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
@@ -138,9 +137,11 @@ function ClientForm() {
         console.log("err", err);
       });
   };
+
   const onblurvalidation = (e, msg) => {
     blurfuction(e, msg, seterror, formData);
   };
+
   const SubmitValidation = async () => {
     const keys = Object.keys(inputRefs.current);
     let isValid = true; // Assume all validations pass initially
@@ -218,10 +219,13 @@ function ClientForm() {
         console.log("err", err);
       });
   }, []);
+
+
   const setInputRef = (name, ref) => {
     // console.log(name);
     inputRefs.current[name] = ref;
   };
+  
   return (
     <div className="d-flex">
       <Sidebar />
@@ -263,7 +267,6 @@ function ClientForm() {
                   value={formData.companyName}
                   onChange={handleInputChange}
                   onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
-                  //  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                 />
                 <div className="form-text text-danger">{error.companyName}</div>
@@ -553,7 +556,7 @@ function ClientForm() {
                 <select
                   ref={(ref) => setInputRef("GroupId", ref)}
                   name="GroupId"
-                  id=""
+                  id="groupId"
                   className="form-select"
                   onChange={handleInputChange}
                 >

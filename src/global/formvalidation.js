@@ -2,7 +2,9 @@ import axios from "axios";
 
 const urlRegex =
   /^(https?:\/\/)?([a-zA-Z0-9-]+\.){1,}[a-zA-Z]{2,}([\/\w-]+)?(\/[\w\-\.]+)?\/?(\?[\w\d%&=\-\.]+)?(#\w+)?$/;
+
 export const blurfuction = async (e, msg, seterror, data) => {
+  // validation for input attr required  //
   if (
     e.target.hasAttribute("required") &&
     !e.target.value &&
@@ -14,7 +16,9 @@ export const blurfuction = async (e, msg, seterror, data) => {
       e.target.classList.remove("border-success");
     }
     e.target.classList.add("border-danger");
-  } else if (e.target.name === "websiteUrl" && !urlRegex.test(e.target.value)) {
+  }
+  // name = websiteURL validating //
+  else if (e.target.name === "websiteUrl" && !urlRegex.test(e.target.value)) {
     seterror((prev) => ({
       ...prev,
       [e.target.name]:
@@ -24,19 +28,25 @@ export const blurfuction = async (e, msg, seterror, data) => {
       e.target.classList.remove("border-success");
     }
     e.target.classList.add("border-danger");
-  } else if (!e.target.checkValidity()) {
+  }
+  /////////////
+  else if (!e.target.checkValidity()) {
     seterror((prev) => ({ ...prev, [e.target.name]: msg }));
     if (e.target.classList.contains("border-success")) {
       e.target.classList.remove("border-success");
     }
     e.target.classList.add("border-danger");
-  } else if (e.target.name === "officialEmail") {
+  }
+
+  // validating officialEmail //
+  else if (e.target.name === "officialEmail") {
     try {
       const result = await axios.post(
         `${process.env.REACT_APP_Sever_Api}/validatingEmail`,
         { [e.target.name]: e.target.value }
       );
       // console.log(result);
+      // in case of success =>
       if (result.data.flag) {
         seterror((prev) => ({ ...prev, [e.target.name]: "" }));
         if (e.target.classList.contains("border-danger")) {
@@ -64,10 +74,10 @@ export const blurfuction = async (e, msg, seterror, data) => {
       }
       e.target.classList.add("border-danger");
     }
-  } else if (
-    e.target.name === "CPassword" &&
-    e.target.value !== data.password
-  ) {
+  }
+
+  // validatig confirm password //
+  else if (e.target.name === "CPassword" && e.target.value !== data.password) {
     seterror((prev) => ({
       ...prev,
       [e.target.name]: "The passwords entered do not match.",
@@ -97,6 +107,8 @@ export const blurfuction = async (e, msg, seterror, data) => {
 
   //     dispatch(CheckUnique(options));
   //   }
+
+  // after all successful operations //
   else {
     seterror((prev) => ({ ...prev, [e.target.name]: "" }));
     if (e.target.classList.contains("border-danger")) {
@@ -105,6 +117,7 @@ export const blurfuction = async (e, msg, seterror, data) => {
     e.target.classList.add("border-success");
   }
 };
+
 export const submitvalidation = async (Reference, seterror, data) => {
   // console.log(
   //   Reference.name,
@@ -129,6 +142,7 @@ export const submitvalidation = async (Reference, seterror, data) => {
     }
     Reference.classList.add("border-danger");
     return false;
+    // check validity of website url
   } else if (
     Reference.name === "websiteUrl" &&
     !urlRegex.test(Reference.value)
@@ -143,14 +157,18 @@ export const submitvalidation = async (Reference, seterror, data) => {
     }
     Reference.classList.add("border-danger");
     return false;
-  } else if (!Reference.checkValidity()) {
+  }
+  ///////////////
+  else if (!Reference.checkValidity()) {
     seterror((prev) => ({ ...prev, [Reference.name]: Reference.title }));
     if (Reference.classList.contains("border-success")) {
       Reference.classList.remove("border-success");
     }
     Reference.classList.add("border-danger");
     return false;
-  } else if (Reference.name === "officialEmail") {
+  }
+  // check validity of official email //
+  else if (Reference.name === "officialEmail") {
     try {
       const result = await axios.post(
         `${process.env.REACT_APP_Sever_Api}/validatingEmail`,
@@ -187,6 +205,7 @@ export const submitvalidation = async (Reference, seterror, data) => {
       Reference.classList.add("border-danger");
       return false;
     }
+    // check validity of C password //
   } else if (
     Reference.name === "CPassword" &&
     Reference.value !== data.password
@@ -245,6 +264,7 @@ export const submitvalidation = async (Reference, seterror, data) => {
   //   return true;
   // }
 };
+
 export const remove_border_color = (Reference) => {
   Reference.value = "";
 
