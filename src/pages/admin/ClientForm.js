@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useParams } from "react-router-dom";
+// import { useParams } from "react-router-dom";
 import { countries } from "../../global/Countries";
 import {
   blurfuction,
@@ -27,7 +27,7 @@ const initialState = {
   country: "",
   annualRevenue: "",
   logo: "",
-  groupName: "",
+  groupId: "",
   primaryEmail: "",
   primaryfirstName: "",
   primarylastName: "",
@@ -46,22 +46,20 @@ const initialState = {
 };
 
 function ClientForm(props) {
-  console.warn("props", props);
+  // console.warn("props", props);
   const [groups, setGroups] = useState([]);
   const [error, seterror] = useState({});
   const [UploadPercentage, setUploadPercentage] = useState({
     logo: 0,
     profilePic: 0,
   });
-  const inputRefs = useRef({});
-
   const [formData, setFormData] = useState(initialState);
-  const { id } = useParams();
+  const inputRefs = useRef({});
   const navigate = useNavigate();
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
@@ -121,9 +119,11 @@ function ClientForm(props) {
         console.log("err", err);
       });
   };
+
   const onblurvalidation = (e, msg) => {
     blurfuction(e, msg, seterror, formData);
   };
+
   const SubmitValidation = async () => {
     const keys = Object.keys(inputRefs.current);
     let isValid = true; // Assume all validations pass initially
@@ -179,7 +179,7 @@ function ClientForm(props) {
             profilePic: 0,
           });
           seterror((prev) => ({ ...prev, general: undefined }));
-          navigate("/manageClient");
+          // navigate("/manageClient");
         })
         .catch((err) => {
           console.log("err", err);
@@ -201,10 +201,13 @@ function ClientForm(props) {
         console.log("err", err);
       });
   }, []);
+
+
   const setInputRef = (name, ref) => {
     // console.log(name);
     inputRefs.current[name] = ref;
   };
+  
   return (
     <div className="d-flex">
       <Sidebar />
@@ -246,7 +249,6 @@ function ClientForm(props) {
                   value={formData.companyName}
                   onChange={handleInputChange}
                   onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
-                  //  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                 />
                 <div className="form-text text-danger">{error.companyName}</div>
@@ -536,7 +538,7 @@ function ClientForm(props) {
                 <select
                   ref={(ref) => setInputRef("GroupId", ref)}
                   name="GroupId"
-                  id=""
+                  id="groupId"
                   className="form-select"
                   onChange={handleInputChange}
                 >

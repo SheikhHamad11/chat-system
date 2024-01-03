@@ -1,67 +1,160 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Sidebar from "./Sidebar";
 import { countries } from "../../global/Countries";
+import {
+  blurfuction,
+  remove_border_color,
+  submitvalidation,
+} from "../../global/formvalidation";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 const designation = ["agent", "sepervisor", "manager"];
+const initialState = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  cellNumber: "",
+  workingHours: "",
+  address: "",
+  city: "",
+  stateRegion: "",
+  zipPostalCode: "",
+  country: "",
+  designation: "agent",
+  loginemail: "",
+  profilePic: "",
+  password: "",
+};
 const AgentForm = () => {
-  const [emailError, setEmailError] = useState("");
-  const [loginemailError, setloginEmailError] = useState("");
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    cellNumber: "",
-    workingHours: "",
-    address: "",
-    city: "",
-    stateRegion: "",
-    zipPostalCode: "",
-    country: "",
-    designation: "agent",
-    loginemail: "",
-    logo: "",
-    password: "",
-  });
+  const [error, seterror] = useState({});
+  const [UploadPercentage, setUploadPercentage] = useState({ logo: 0 });
+  const inputRefs = useRef({});
+  const [formData, setFormData] = useState(initialState);
+  const navigate = useNavigate();
 
-  // const getData = () => {
-  //     const val = JSON.parse(localStorage.getItem('agents'))
-  //     setFormData(val)
-  // }
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
+  };
 
-    // Email validation
-    if (name === "email") {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      setEmailError(emailRegex.test(value) ? "" : "Invalid email address");
-    }
+  // const handleFileChange = (e) => {
+  //   const file = e.target.files[0];
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     logo: file,
+  //   }));
+  // };
 
-    if (name === "loginemail") {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      setloginEmailError(emailRegex.test(value) ? "" : "Invalid email address");
-    }
+  const setInputRef = (name, ref) => {
+    // console.log(name);
+    inputRefs.current[name] = ref;
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setFormData((prevData) => ({
-      ...prevData,
-      logo: file,
-    }));
+    const imagedata = new FormData();
+    imagedata.append("photo", e.target.files[0]);
+    if (formData[e.target.name]) {
+      imagedata.append("oldpicture", formData[e.target.name]);
+    }
+    const url = `${process.env.REACT_APP_Sever_Api}/imageupload`;
+    axios
+      .post(url, imagedata, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentage = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadPercentage((prev) => ({
+            ...prev,
+            [e.target.name]: percentage,
+          }));
+        },
+      })
+      .then((res) => {
+        // console.log("res", res.data.path);
+        seterror((prev) => ({ ...prev, [e.target.name]: "" }));
+        if (e.target.classList.contains("border-danger")) {
+          e.target.classList.remove("border-danger");
+        }
+        e.target.classList.add("border-success");
+
+        setFormData((prevData) => ({
+          ...prevData,
+          [e.target.name]: res.data.path,
+        }));
+      })
+      .catch((err) => {
+        console.log("err", err);
+      });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (emailError) {
-      console.log("Form submission failed. Please fix validation errors.");
-      return;
+  const SubmitValidation = async () => {
+    const keys = Object.keys(inputRefs.current);
+    let isValid = true; // Assume all validations pass initially
+    let scroll = true;
+
+    for (const item of keys) {
+      if (
+        !(await submitvalidation(inputRefs.current[item], seterror, formData))
+      ) {
+        console.log("false:", inputRefs.current[item].name);
+        isValid = false;
+
+        if (scroll) {
+          scroll = false;
+          inputRefs.current[item].scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }
+        // No need to continue checking other fields if one fails
+      }
     }
-    // Send formData to server or perform other actions
-    localStorage.setItem("agents", JSON.stringify(formData));
-    console.log("Form submitted:", formData);
+
+    return isValid; // Return the overall validation result
+  };
+
+  const remove_border = () => {
+    const keys = Object.keys(inputRefs.current);
+
+    keys.forEach((item) => {
+      remove_border_color(inputRefs.current[item]);
+    });
+  };
+
+  const onblurvalidation = (e, msg) => {
+    blurfuction(e, msg, seterror, formData);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (await SubmitValidation()) {
+      axios
+        .post(`${process.env.REACT_APP_Sever_Api}/agent`, formData)
+        .then((res) => {
+          console.log("res", res);
+          remove_border();
+          setFormData(initialState);
+          setUploadPercentage({
+            logo: 0,
+          });
+          seterror((prev) => ({ ...prev, general: undefined }));
+          navigate("/manageAgent");
+        })
+        .catch((err) => {
+          console.log("err", err);
+          window.scrollTo(0, 0);
+          seterror((prev) => ({ ...prev, general: err.response.data.message }));
+        });
+    }
+    // localStorage.setItem("agents", JSON.stringify(formData));
+    // console.log("Form submitted:", formData);
   };
 
   return (
@@ -70,12 +163,16 @@ const AgentForm = () => {
       <div className="right">
         <div className="container">
           <h1 className="my-3 text-center">Agent Form</h1>
-          <form onSubmit={handleSubmit} className="card shadow border-0">
+          <form onSubmit={handleSubmit} className="card shadow border-0 mb-5">
             <div className="row m-3">
               <h3>Basic Info:</h3>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>First Name:</label>{" "}
+                <label>
+                  First Name:<span className="text-danger fw-bold">*</span>
+                </label>{" "}
                 <input
+                  ref={(ref) => setInputRef("firstName", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control "
                   type="text"
@@ -83,10 +180,15 @@ const AgentForm = () => {
                   value={formData.firstName}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">{error.firstName}</div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Last Name:</label>{" "}
+                <label>
+                  Last Name: <span className="text-danger fw-bold">*</span>
+                </label>{" "}
                 <input
+                  ref={(ref) => setInputRef("lastName", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="text"
@@ -94,11 +196,20 @@ const AgentForm = () => {
                   value={formData.lastName}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">{error.lastName}</div>
               </div>
 
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Email:</label>{" "}
+                <label>
+                  Email: <span className="text-danger fw-bold">*</span>
+                </label>{" "}
                 <input
+                  ref={(ref) => setInputRef("email", ref)}
+                  pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+                  onBlur={(e) =>
+                    onblurvalidation(e, "Please Enter a Valid Email Address.")
+                  }
+                  title="Please Enter a Valid Email Address."
                   required
                   className="form-control"
                   type="email"
@@ -106,12 +217,15 @@ const AgentForm = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                 />
-                {/* Email validation error message */}
-                {emailError && <div style={{ color: "red" }}>{emailError}</div>}
+                <div className="form-text text-danger">{error.email}</div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Cell#:</label>{" "}
+                <label>
+                  Cell#: <span className="text-danger fw-bold">*</span>
+                </label>{" "}
                 <input
+                  ref={(ref) => setInputRef("cellNumber", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="tel"
@@ -119,11 +233,16 @@ const AgentForm = () => {
                   value={formData.cellNumber}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">{error.cellNumber}</div>
               </div>
 
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Working Hours:</label>{" "}
+                <label>
+                  Working Hours: <span className="text-danger fw-bold">*</span>
+                </label>{" "}
                 <input
+                  ref={(ref) => setInputRef("workingHours", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="text"
@@ -131,10 +250,17 @@ const AgentForm = () => {
                   value={formData.workingHours}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">
+                  {error.workingHours}
+                </div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Address:</label>{" "}
+                <label>
+                  Address: <span className="text-danger fw-bold">*</span>
+                </label>{" "}
                 <input
+                  ref={(ref) => setInputRef("address", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="text"
@@ -142,11 +268,16 @@ const AgentForm = () => {
                   value={formData.address}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">{error.address}</div>
               </div>
 
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>City:</label>{" "}
+                <label>
+                  City: <span className="text-danger fw-bold">*</span>
+                </label>{" "}
                 <input
+                  ref={(ref) => setInputRef("city", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="text"
@@ -154,10 +285,15 @@ const AgentForm = () => {
                   value={formData.city}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">{error.city}</div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>State/Region:</label>{" "}
+                <label>
+                  State/Region: <span className="text-danger fw-bold">*</span>
+                </label>{" "}
                 <input
+                  ref={(ref) => setInputRef("stateRegion", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="text"
@@ -165,11 +301,17 @@ const AgentForm = () => {
                   value={formData.stateRegion}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">{error.stateRegion}</div>
               </div>
 
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Zip/Postal Code:</label>{" "}
+                <label>
+                  Zip/Postal Code:{" "}
+                  <span className="text-danger fw-bold">*</span>
+                </label>{" "}
                 <input
+                  ref={(ref) => setInputRef("zipPostalCode", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   required
                   className="form-control"
                   type="text"
@@ -177,14 +319,22 @@ const AgentForm = () => {
                   value={formData.zipPostalCode}
                   onChange={handleInputChange}
                 />
+                <div className="form-text text-danger">
+                  {error.zipPostalCode}
+                </div>
               </div>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Country:</label>
+                <label>
+                  Country: <span className="text-danger fw-bold">*</span>
+                </label>
                 <select
+                  ref={(ref) => setInputRef("country", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   name="country"
                   id="country"
                   className="form-select"
                   value={formData.country}
+                  required
                   onChange={handleInputChange}
                 >
                   <option value="">-- Select Country --</option>
@@ -194,12 +344,16 @@ const AgentForm = () => {
                     </option>
                   ))}
                 </select>
-                {/* <input required className='form-control' type="text" name="country" value={formData.country} onChange={handleInputChange} /> */}
+                <div className="form-text text-danger">{error.country}</div>
               </div>
 
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Designation:</label>
+                <label>
+                  Designation: <span className="text-danger fw-bold">*</span>
+                </label>
                 <select
+                  ref={(ref) => setInputRef("designation", ref)}
+                  onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                   className="form-select"
                   onChange={handleInputChange}
                   name="designation"
@@ -211,11 +365,20 @@ const AgentForm = () => {
                     </option>
                   ))}
                 </select>
+                <div className="form-text text-danger">{error.designation}</div>
               </div>
               <h3>Login Info:</h3>
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Email:</label>
+                <label>
+                  Email: <span className="text-danger fw-bold">*</span>
+                </label>
                 <input
+                  ref={(ref) => setInputRef("loginemail", ref)}
+                  pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+                  onBlur={(e) =>
+                    onblurvalidation(e, "Please Enter a Valid Email Address.")
+                  }
+                  title="Please Enter a Valid Email Address."
                   required
                   className="form-control"
                   type="email"
@@ -223,14 +386,11 @@ const AgentForm = () => {
                   value={formData.loginemail}
                   onChange={handleInputChange}
                 />
-                {/* Email validation error message */}
-                {loginemailError && (
-                  <div style={{ color: "red" }}>{loginemailError}</div>
-                )}
+                <div className="form-text text-danger">{error.loginemail}</div>
               </div>
 
-              <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Password:</label>
+              {/* <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
+                <label>Password: <span className="text-danger fw-bold">*</span></label>
                 <input
                   required
                   className="form-control"
@@ -239,17 +399,111 @@ const AgentForm = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                 />
-              </div>
+              </div> */}
+
               <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
-                <label>Profile Picture:</label>
+                <label>
+                  Password: <span className="text-danger fw-bold">*</span>
+                </label>
+                <input
+                  ref={(ref) => setInputRef("password", ref)}
+                  required
+                  className="form-control"
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  pattern="^(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&+=!_])[A-Za-z\d@#$%^&+=!_]{8,}$"
+                  onChange={handleInputChange}
+                  onBlur={(e) =>
+                    onblurvalidation(
+                      e,
+                      "Password must be at least 8 characters long and include at least one uppercase letter, one digit, and one special character (!@#$%^&*()-_+=)."
+                    )
+                  }
+                  title="Password must be at least 8 characters long and include at least one uppercase letter, one digit, and one special character (!@#$%^&*()-_+=)."
+                />
+                <div className="form-text text-danger">{error.password}</div>
+              </div>
+
+              <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
+                <label>
+                  Confirm Password
+                  <span className="text-danger fw-bold">*</span>
+                </label>
+                <input
+                  ref={(ref) => setInputRef("CPassword", ref)}
+                  onBlur={(e) =>
+                    onblurvalidation(
+                      e,
+                      "Password must be at least 8 characters long and include at least one uppercase letter, one digit, and one special character (!@#$%^&*()-_+=)."
+                    )
+                  }
+                  title="Password must be at least 8 characters long and include at least one uppercase letter, one digit, and one special character (!@#$%^&*()-_+=)."
+                  required
+                  className="form-control"
+                  type="password"
+                  name="CPassword"
+                  value={formData.CPassword}
+                  pattern="^(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&+=!_])[A-Za-z\d@#$%^&+=!_]{8,}$"
+                  onChange={handleInputChange}
+                />
+                <div className="form-text text-danger">{error.CPassword}</div>
+              </div>
+              {/* <div className="col-12 col-md-6 col-lg-4 col-xxl-3">
+                <label>Profile Picture: <span className="text-danger fw-bold">*</span></label>
                 <input
                   required
                   className="form-control"
                   type="file"
-                  name="logo"
+                  name="profilePic"
                   onChange={handleFileChange}
                   accept="image/*"
                 />
+                <div className="form-text text-danger">
+                  {error.profilePic}
+                </div>
+              </div> */}
+              <div className="col-12 ">
+                <label>
+                  Profile Picture <span className="text-danger fw-bold">*</span>
+                </label>
+                <input
+                  ref={(ref) => setInputRef("profilePic", ref)}
+                  className="form-control"
+                  type="file"
+                  name="profilePic"
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  disabled={
+                    UploadPercentage.profilePic > 0 && UploadPercentage < 100
+                  }
+                  required
+                  onBlur={(e) =>
+                    onblurvalidation(e, "Please select a profile picture.")
+                  }
+                  title="Please select a profile picture."
+                />
+                <div className="form-text text-danger">{error.profilePic}</div>
+                {UploadPercentage.profilePic > 0 && (
+                  <div
+                    className="progress mt-1"
+                    role="progressbar"
+                    aria-label="Basic example"
+                    aria-valuenow={25}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                  >
+                    <div
+                      className="progress-bar bg-success"
+                      style={{ width: `${UploadPercentage.profilePic}%` }}
+                    >
+                      {/* {console.log(UploadPercentage)} */}
+                      {UploadPercentage.profilePic === 100
+                        ? "Uploaded Successfully!!"
+                        : `${UploadPercentage.profilePic}%`}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <button

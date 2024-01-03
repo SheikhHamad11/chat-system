@@ -9,10 +9,10 @@ export default function Dashboard() {
     return (
         <div className='dashboard d-flex'>
             <Sidebar />
-            {/* <div className="right">
+            <div className="right">
                 <h1 className='text-center my-2'>Admin Dashboard</h1>
                
-            </div> */}
+            </div>
         </div>
     )
 }
