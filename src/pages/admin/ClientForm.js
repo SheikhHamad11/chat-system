@@ -64,19 +64,6 @@ function ClientForm() {
       [name]: value,
     }));
 
-    // // Email validation
-    // if (name === "primaryEmail") {
-    //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    //   seterror(emailRegex.test(value) ? "" : "Invalid email address");
-    // }
-    // if (name === "secemail") {
-    //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    //   setsEmailError(emailRegex.test(value) ? "" : "Invalid email address");
-    // }
-    // if (name === "loginemail") {
-    //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    //   setloginEmailError(emailRegex.test(value) ? "" : "Invalid email address");
-    // }
   };
   const fetchClient = async (_id) => {
     try {

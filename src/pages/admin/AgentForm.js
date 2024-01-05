@@ -7,7 +7,7 @@ import {
   submitvalidation,
 } from "../../global/formvalidation";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 const designation = ["agent", "sepervisor", "manager"];
 const initialState = {
   firstName: "",
@@ -32,7 +32,7 @@ const AgentForm = () => {
   const [formData, setFormData] = useState(initialState);
   const [groups, setGroups] = useState([]);
   const navigate = useNavigate();
-
+  const { Id } = useParams();
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -40,6 +40,24 @@ const AgentForm = () => {
       [name]: value,
     }));
   };
+
+  const fetchAgent = async (_id) => {
+    try {
+      const result = await axios.get(
+        `${process.env.REACT_APP_Sever_Api}/Agent/${_id}`
+      );
+      // console.log(result.data);
+      setFormData(result.data);
+    } catch (e) {
+      console.error(e);
+    }
+    // const result;
+  };
+  useEffect(() => {
+    if (Id) {
+      fetchAgent(Id);
+    }
+  }, [Id]);
 
   // const handleFileChange = (e) => {
   //   const file = e.target.files[0];

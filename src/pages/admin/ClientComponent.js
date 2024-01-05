@@ -15,7 +15,7 @@ export default function ClientComponent() {
 
   useEffect(() => {
     axios
-      .get("http://192.168.60.116:5000/api/client")
+      .get(`${process.env.REACT_APP_Sever_Api}/client`)
       .then((res) => {
         console.log("res", res);
         setData(res.data);

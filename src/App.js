@@ -7,6 +7,7 @@ import ClientForm from './pages/admin/ClientForm';
 import ManageAgent from './pages/admin/ManageAgent';
 import AgentForm from './pages/admin/AgentForm';
 import GroupsManagement from './pages/admin/GroupsManagement';
+import GroupComponent from './pages/admin/GroupComponent';
 
 function App() {
   return (
@@ -20,7 +21,9 @@ function App() {
         <Route path='/manageClient' element={<ManageClient/>} />
         <Route path='/manageAgent' element={<ManageAgent/>} />
         <Route path='/groupsmanagement' element={<GroupsManagement/>} />
+        <Route path='/groupcomponent' element={<GroupComponent/>} />
         <Route path='/agentForm' element={<AgentForm/>} />
+        <Route path='/agentForm/:Id' element={<AgentForm/>} />
         <Route path='/clientForm/:Id' element={<ClientForm/>} />
         <Route path='/clientForm' element={<ClientForm/>} />
       </Route>
