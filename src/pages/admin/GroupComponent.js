@@ -1,35 +1,27 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import React, { useEffect, useState, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  blurfuction,
+  remove_border_color,
+  submitvalidation,
+} from "../../global/formvalidation";
 
-const groups = [
-  {
-    id: 1,
-    name: "clothing",
-    description: "This brand is about clothing",
-  },
-  {
-    id: 2,
-    name: "cotton",
-    description: "This brand is about cotton",
-  },
-  {
-    id: 3,
-    name: "wood",
-    description: "This brand is about wood products",
-  },
-];
+const initialState = {
+  groupName: "",
+  groupDescription: "",
+};
 export default function GroupComponent() {
   const [search, setSearch] = useState("");
+  const [error, seterror] = useState({});
   const [addedgroups, setaddedGroups] = useState([]);
-  const [formData, setFormData] = useState({
-    groupName: "",
-    groupDescription: "",
-  });
-
+  const [formData, setFormData] = useState(initialState);
+  const inputRefs = useRef({});
+  const navigate = useNavigate();
+  // fetching groups data //
   useEffect(() => {
     axios
-      .get("http://192.168.60.116:5000/api/group")
+      .get(`${process.env.REACT_APP_Sever_Api}/group`)
       .then((result) => {
         setaddedGroups(result.data);
         console.log("res", result);
@@ -47,21 +39,92 @@ export default function GroupComponent() {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    axios
-      .post("http://192.168.60.116:5000/api/group", formData)
-      .then((res) => {
-        console.log("res", res);
-        Navigate("/groupManagement");
-      })
-      .catch((err) => {
-        console.log("err", err);
-      });
+  const SubmitValidation = async () => {
+    const keys = Object.keys(inputRefs.current);
+    let isValid = true; // Assume all validations pass initially
+    let scroll = true;
 
-    let newData = [...groups, { ...formData }];
-    setaddedGroups(newData);
-    console.log("Form submitted:", formData);
+    for (const item of keys) {
+      if (
+        item !== "popup" &&
+        !(await submitvalidation(inputRefs.current[item], seterror, formData))
+      ) {
+        console.log("false:", inputRefs.current[item].name);
+        isValid = false;
+
+        if (scroll) {
+          scroll = false;
+          inputRefs.current[item].scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }
+        // No need to continue checking other fields if one fails
+      }
+    }
+
+    return isValid; // Return the overall validation result
+  };
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   if (await SubmitValidation()) {
+  //     console.log("first");
+  //     remove_border();
+  //     setFormData(initialState);
+  //     navigate("/groupsmanagement");
+  //     document.getElementById("staticBackdrop").style.background = "none";
+  //   }
+  //   // localStorage.setItem("agents", JSON.stringify(formData));
+  //   // console.log("Form submitted:", formData);
+  // };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (await SubmitValidation()) {
+      axios
+        .post(`${process.env.REACT_APP_Sever_Api}/group`, formData)
+        .then((res) => {
+          console.log("res", res);
+          // inputRefs.current.popup.classList.remove("show");
+          // inputRefs.current.popup.style.display = "none";
+          // inputRefs.current.popup.setAttribute("data-bs-dismiss", "modal");
+          // inputRefs.current.popup.setAttribute("aria-label", "Close");
+          inputRefs.current.popup.setAttribute("modal", "hide");
+          // e.target.classList.remove("border-success");
+          remove_border();
+          setaddedGroups((prev) => [res.data, ...prev]);
+          setFormData(initialState);
+
+          seterror((prev) => ({ ...prev, general: undefined }));
+          navigate("/groupsmanagement");
+        })
+        .catch((err) => {
+          console.log("err", err);
+          window.scrollTo(0, 0);
+          seterror((prev) => ({ ...prev, general: err.response.data.message }));
+        });
+    }
+    // localStorage.setItem("agents", JSON.stringify(formData));
+    // console.log("Form submitted:", formData);
+  };
+
+  const setInputRef = (name, ref) => {
+    // console.log(name);
+    inputRefs.current[name] = ref;
+  };
+
+  const remove_border = () => {
+    const keys = Object.keys(inputRefs.current);
+
+    keys.forEach((item) => {
+      remove_border_color(inputRefs.current[item]);
+    });
+  };
+
+  const onblurvalidation = (e, msg) => {
+    blurfuction(e, msg, seterror, formData);
   };
 
   return (
@@ -127,6 +190,7 @@ export default function GroupComponent() {
       </div>
 
       <div
+        ref={(ref) => setInputRef("popup", ref)}
         className="modal fade"
         id="staticBackdrop"
         data-bs-backdrop="static"
@@ -153,6 +217,8 @@ export default function GroupComponent() {
                 <div className="col-12">
                   <label>Group Name:</label>
                   <input
+                    ref={(ref) => setInputRef("groupName", ref)}
+                    onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                     required
                     className="form-control"
                     type="text"
@@ -160,10 +226,13 @@ export default function GroupComponent() {
                     value={formData.groupName}
                     onChange={handleInputChange}
                   />
+                  <div className="form-text text-danger">{error.groupName}</div>
                 </div>
                 <div className="col-12">
                   <label>Group Description:</label>
                   <input
+                    ref={(ref) => setInputRef("groupDescription", ref)}
+                    onBlur={(e) => onblurvalidation(e, "can't be empty!!")}
                     required
                     className="form-control"
                     type="text"
@@ -171,6 +240,9 @@ export default function GroupComponent() {
                     value={formData.groupDescription}
                     onChange={handleInputChange}
                   />
+                  <div className="form-text text-danger">
+                    {error.groupDescription}
+                  </div>
                 </div>
               </div>
               <div className="modal-footer">

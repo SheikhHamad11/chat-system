@@ -1,14 +1,30 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { data } from '../../global/AgentData'
+// import { data } from '../../global/AgentData'
+import axios from 'axios'
 
 const statuses = ["Active", "Deactivate", "Suspend"]
 
 export default function AgentComponent() {
+    const [data,setData]=useState([])
     const [search, setSearch] = useState('')
     const handleChange = (e) => {
         // setFormData(s => ({ ...s, [e.target.name]: e.target.value }))
     }
+
+    useEffect(() => {
+        axios
+          .get(`${process.env.REACT_APP_Sever_Api}/Agent`)
+          .then((res) => {
+            console.log("res", res);
+            setData(res.data);
+          })
+          .catch((err) => {
+            console.log("err", err);
+          });
+      }, []);
+
+      
     return (
         <div className="right">
             <div className="container card shadow border-0 mt-3">
@@ -23,9 +39,9 @@ export default function AgentComponent() {
                             <tr className='my-2'>
                                 <th scope="col">#</th>
                                 <th scope="col">First Name</th>
-                                <th scope="col">Last Name</th>
-                                <th scope="col">Email</th>
                                 <th scope="col">Designation</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -33,12 +49,12 @@ export default function AgentComponent() {
                                 data.filter(item => {
                                     return search.toLowerCase() === ''
                                         ? item
-                                        : item.first_name.toLowerCase().includes(search)
+                                        : item.firstName.toLowerCase().includes(search)
                                 }).map((item, i) => {
                                     return <tr key={i}>
                                         <th scope="row">{i + 1}</th>
-                                        <td>{item.first_name}</td>
-                                        <td>{item.last_name}</td>
+                                        <td>{item.firstName}</td>
+                                        <td>{item.designation}</td>
                                         <td>{item.email}</td>
                                         <td>
                                         <select className='form-select' name="" id="" onChange={handleChange}>
@@ -49,7 +65,7 @@ export default function AgentComponent() {
                                                 }
                                             </select>
                                         </td>
-                                        <td><Link to='/agentForm' className='btn btn-outline-warning'>Edit</Link></td>
+                                        <td><Link  to={"/agentForm/" + item._id} className='btn btn-outline-warning'>Edit</Link></td>
                                     </tr>
                                 })
                             }
