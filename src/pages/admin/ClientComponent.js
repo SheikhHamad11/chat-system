@@ -55,6 +55,7 @@ export default function ClientComponent() {
             Add New Client
           </Link>
         </div>
+        
 
         <div className="table-responsive">
           <table className="table table-striped">

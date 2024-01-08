@@ -27,12 +27,13 @@ export default function AgentComponent() {
       
     return (
         <div className="right">
-            <div className="container card shadow border-0 mt-3">
+            <div className="container  card shadow border-0 my-3">
                 <h1 className='text-center'>Agent Section</h1>
                 <div className="d-flex justify-content-between  p-3">
-                    <input type="text" onChange={e => setSearch(e.target.value)} className='form-control w-25' placeholder='Search Here' />
+                    <input type="text" onChange={e => setSearch(e.target.value)} className='form-control w-auto' placeholder='Search Here' />
                     <Link to='/AgentForm' className='btn btn-outline-info '>Add New Agent</Link>
                 </div>
+                
                 <div className='table-responsive'>
                     <table className="table table-striped">
                         <thead>
@@ -42,6 +43,7 @@ export default function AgentComponent() {
                                 <th scope="col">Designation</th>
                                 <th scope="col">Email</th>
                                 <th scope="col">Status</th>
+                                
                             </tr>
                         </thead>
                         <tbody>
