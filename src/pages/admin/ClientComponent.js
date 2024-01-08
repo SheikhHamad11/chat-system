@@ -13,18 +13,35 @@ const statuses = [
 export default function ClientComponent() {
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
-  const fetch_client = async (page) => {
+  const [totalclient, settotalclient] = useState(0);
+  const [typingTimer, setTypingTimer] = useState(null);
+  const delay = 1000;
+  const [loading, setloading] = useState(false);
+  const [tab, settab] = useState(1);
+  useEffect(() => {
+    return () => {
+      if (typingTimer) {
+        clearTimeout(typingTimer);
+      }
+    };
+  }, [typingTimer]);
+  const fetch_client = async (page, searchterm) => {
+    settab(page);
     axios
       .get(
-        `${
-          process.env.REACT_APP_Sever_Api
-        }/client?page=${page}&search=${"undefined"}`
+        `${process.env.REACT_APP_Sever_Api}/client?page=${page}&search=${searchterm}`
       )
       .then((res) => {
         console.log("res", res);
-        setData(res.data);
+        console.log(loading);
+        setloading(false);
+        setData(res.data.clientdata);
+        if (res.data.totalCount) {
+          settotalclient(res.data.totalCount);
+        }
       })
       .catch((err) => {
+        setloading(false);
         console.log("err", err);
       });
   };
@@ -47,6 +64,25 @@ export default function ClientComponent() {
     }
     // setFormData(s => ({ ...s, [e.target.name]: e.target.value }))
   };
+  const handlesearch = (e) => {
+    setSearch(e.target.value);
+    if (typingTimer) {
+      clearTimeout(typingTimer);
+    }
+    console.log(loading);
+    if (!loading) setloading(true);
+
+    // Set a new timer
+    setTypingTimer(
+      setTimeout(() => {
+        // Trigger search after the delay
+        fetch_client(1, e.target.value);
+      }, delay)
+    );
+  };
+  const handlepagechange = (page) => {
+    fetch_client(page, search);
+  };
   return (
     <div className="right">
       <div className="container w-auto card shadow border-0 my-3">
@@ -54,7 +90,7 @@ export default function ClientComponent() {
         <div className="d-flex justify-content-between  p-3">
           <input
             type="text"
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handlesearch(e)}
             className="form-control w-auto "
             placeholder="Search Here"
           />
@@ -79,12 +115,14 @@ export default function ClientComponent() {
                 .filter((item) => {
                   return search.toLowerCase() === ""
                     ? item
-                    : item.companyName.toLowerCase().includes(search);
+                    : item.companyName
+                        .toLowerCase()
+                        .includes(search.toLocaleLowerCase());
                 })
                 .map((item, i) => {
                   return (
                     <tr key={item._id}>
-                      <th scope="row">{i + 1}</th>
+                      <th scope="row">{(tab - 1) * 20 + i + 1}</th>
                       <td>{item.companyName}</td>
                       <td>{item.industry}</td>
                       <td>{item.websiteURL}</td>
@@ -117,8 +155,19 @@ export default function ClientComponent() {
             </tbody>
           </table>
         </div>
+        {loading && (
+          <div className="d-flex justify-content-center">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        )}
+
         <div className="d-flex justify-content-end">
-          <Pagination />
+          <Pagination
+            totalclient={totalclient}
+            handlepagechange={handlepagechange}
+          />
         </div>
       </div>
     </div>
