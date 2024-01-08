@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Pagination from "../../components/Pagination";
 
 const statuses = [
   { name: "Active", value: 1 },
@@ -12,10 +13,13 @@ const statuses = [
 export default function ClientComponent() {
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
-
-  useEffect(() => {
+  const fetch_client = async (page) => {
     axios
-      .get(`${process.env.REACT_APP_Sever_Api}/client`)
+      .get(
+        `${
+          process.env.REACT_APP_Sever_Api
+        }/client?page=${page}&search=${"undefined"}`
+      )
       .then((res) => {
         console.log("res", res);
         setData(res.data);
@@ -23,6 +27,9 @@ export default function ClientComponent() {
       .catch((err) => {
         console.log("err", err);
       });
+  };
+  useEffect(() => {
+    fetch_client(1);
   }, []);
 
   const handleChange = async (e, _id, index) => {
@@ -55,8 +62,6 @@ export default function ClientComponent() {
             Add New Client
           </Link>
         </div>
-        
-
         <div className="table-responsive">
           <table className="table table-striped">
             <thead>
@@ -111,6 +116,9 @@ export default function ClientComponent() {
                 })}
             </tbody>
           </table>
+        </div>
+        <div className="d-flex justify-content-end">
+          <Pagination />
         </div>
       </div>
     </div>

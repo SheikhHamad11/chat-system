@@ -77,7 +77,11 @@ export const blurfuction = async (e, msg, seterror, data) => {
   }
 
   // validatig confirm password //
-  else if (e.target.name === "CPassword" && e.target.value !== data.password) {
+  else if (
+    e.target.name === "CPassword" &&
+    data.password &&
+    e.target.value !== data.password
+  ) {
     seterror((prev) => ({
       ...prev,
       [e.target.name]: "The passwords entered do not match.",
@@ -118,7 +122,7 @@ export const blurfuction = async (e, msg, seterror, data) => {
   }
 };
 
-export const submitvalidation = async (Reference, seterror, data) => {
+export const submitvalidation = async (Reference, seterror, data, id) => {
   // console.log(
   //   Reference.name,
   //   ":",
@@ -168,7 +172,7 @@ export const submitvalidation = async (Reference, seterror, data) => {
     return false;
   }
   // check validity of official email //
-  else if (Reference.name === "officialEmail") {
+  else if (Reference.name === "officialEmail" && !id) {
     try {
       const result = await axios.post(
         `${process.env.REACT_APP_Sever_Api}/validatingEmail`,
@@ -208,6 +212,7 @@ export const submitvalidation = async (Reference, seterror, data) => {
     // check validity of C password //
   } else if (
     Reference.name === "CPassword" &&
+    (data.password || !id) &&
     Reference.value !== data.password
   ) {
     seterror((prev) => ({
@@ -270,3 +275,16 @@ export const remove_border_color = (Reference) => {
 
   Reference.classList.remove("border-danger", "border-success");
 };
+export function isImage(file) {
+  // Check if the file is not null
+  if (file) {
+    // Get the MIME type of the file
+    const fileType = file.type;
+
+    // Check if the MIME type starts with 'image/'
+    return fileType.startsWith("image/");
+  }
+
+  // Return false if the file is null or undefined
+  return false;
+}
